@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Blogging Platform Interface</title>
+    <style>
+        body { background-color: #9e4f4f; font-family: sans-serif; max-width: 800px; margin: 20px auto; padding: 20px; line-height: 1.6; }
+        h1 { text-align: center; color: #2f0e0e;}
+        .post-form { background: #7c2f2f; color:#2f0e0e; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+        input, textarea { background: #ba6060; color: #4e1d1d; width: 98%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
+        input::placeholder, textarea::placeholder {color: #441313;}
+        button { background: #28a745; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; }
+        .blog-post { border-bottom: 1px solid #ddd; padding: 15px 0; }
+        .blog-post h3 { margin: 0; color: #431b1b; }
+        .meta { font-size: 0.8em; color: #491919; }
+    </style>
+</head>
+<body>
+    <h1>Blog Manager</h1>
+
+    <div class="post-form">
+        <h3>Create New Post</h3>
+        <input type="text" id="title" placeholder="Blog Title (Required)">
+        <textarea id="body" rows="4" placeholder="Blog Content (Required)"></textarea>
+        <input type="text" id="author" placeholder="Author (Optional)">
+        <button onclick="createPost()">Publish Post</button>
+    </div>
+
+    <div id="posts-container">
+        <h3>All Blog Posts</h3>
+        <div id="blogsList">Loading posts...</div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/blogs';
+let editMode = false;
+let editId = null;
+
+async function fetchPosts() {
+    try {
+        const response = await fetch(API_URL);
+        const blogs = await response.json();
+        const list = document.getElementById('blogsList');
+        list.innerHTML = blogs.map(blog => `
+            <div class="blog-post" id="post-${blog._id}">
+                <h3>${blog.title}</h3>
+                <p>${blog.body}</p>
+                <div class="meta">By: ${blog.author} | Created: ${new Date(blog.createdAt).toLocaleString()}</div>
+                <div style="margin-top: 10px;">
+                    <button onclick="prepareEdit('${blog._id}', '${blog.title}', '${blog.body}', '${blog.author}')" style="background: #ffc107; color: black;">Edit</button>
+                    <button onclick="deletePost('${blog._id}')" style="background: #dc3545;">Delete</button>
+                </div>
+            </div>
+        `).join('');
+    } catch (err) {
+        console.error("Error fetching blogs:", err);
+    }
+}
+
+async function savePost() {
+    const title = document.getElementById('title').value;
+    const body = document.getElementById('body').value;
+    const author = document.getElementById('author').value;
+
+    const method = editMode ? 'PUT' : 'POST';
+    const url = editMode ? `${API_URL}/${editId}` : API_URL;
+
+    try {
+        const response = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, body, author: author || "Anonymous" })
+        });
+
+        if (response.ok) {
+            alert(editMode ? 'Post updated!' : 'Post created!');
+            resetForm();
+            fetchPosts();
+        } else {
+            alert('Error: Title and Body are required');
+        }
+    } catch (err) {
+        console.error("Error saving post:", err);
+    }
+}
+
+async function deletePost(id) {
+    if (confirm('Are you sure you want to delete this post?')) {
+        try {
+            const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+            if (response.ok) {
+                fetchPosts();
+            }
+        } catch (err) {
+            console.error("Error deleting post:", err);
+        }
+    }
+}
+
+function prepareEdit(id, title, body, author) {
+    document.getElementById('title').value = title;
+    document.getElementById('body').value = body;
+    document.getElementById('author').value = author;
+    
+    editMode = true;
+    editId = id;
+    
+    const btn = document.querySelector('.post-form button');
+    btn.innerText = "Update Post";
+    btn.style.background = "#007bff";
+}
+
+function resetForm() {
+    document.getElementById('title').value = '';
+    document.getElementById('body').value = '';
+    document.getElementById('author').value = '';
+    editMode = false;
+    editId = null;
+    const btn = document.querySelector('.post-form button');
+    btn.innerText = "Publish Post";
+    btn.style.background = "#28a745";
+}
+
+fetchPosts();
+    </script>
+</body>
+</html>
