@@ -1,0 +1,17 @@
+body { 
+    background-color: #9e4f4f; 
+    font-family: sans-serif; 
+    max-width: 800px; 
+    margin: 20px auto; 
+    padding: 20px; 
+    line-height: 1.6; 
+}
+h1 { text-align: center; color: #2f0e0e; }
+.post-form { background: #7c2f2f; color:#2f0e0e; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+input, textarea { background: #ba6060; color: #4e1d1d; width: 98%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
+input::placeholder, textarea::placeholder { color: #441313; }
+button { border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; color: white; }
+.btn-publish { background: #28a745; }
+.blog-post { border-bottom: 1px solid #ddd; padding: 15px 0; }
+.blog-post h3 { margin: 0; color: #431b1b; }
+.meta { font-size: 0.8em; color: #491919; }
